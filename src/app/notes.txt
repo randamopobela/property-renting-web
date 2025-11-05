@@ -1,0 +1,10 @@
+Sudah:
+Install NextJS dan Typescript
+Susun struktur folder di /scr
+Install dependencies
+npm i @types/next --save -D
+
+NextJS terbaru tidak perlu npx tailwindcss init lagi
+
+Belum:
+buat frontend
