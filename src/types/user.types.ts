@@ -1,15 +1,14 @@
 export type TUser = {
     id?: string;
     email: string;
-    userName: string;
     firstName: string;
     lastName?: string;
     profilePicture?: string;
     role: string;
     phone?: string;
     address?: string;
-    referralCode: string;
     isActive: boolean;
+    isVerified: boolean;
     createdAt: Date;
     updatedAt: Date;
 };

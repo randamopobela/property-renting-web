@@ -32,7 +32,7 @@ export default function HomePage() {
     const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
     return (
-        <main className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-white">
+        <main className="min-h-screen bg-linear-to-br from-teal-50 via-cyan-50 to-white">
             {/* Hero */}
             <section className="flex flex-col items-center py-16 px-4 text-center">
                 <motion.h2
