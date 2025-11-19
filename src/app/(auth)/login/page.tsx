@@ -2,14 +2,13 @@
 
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import API from "@/lib/axiosInstance";
 import { Eye, EyeClosed } from "lucide-react";
 
 const SignInSchema = Yup.object().shape({
@@ -35,16 +34,16 @@ export default function LoginPage() {
         }
     }, [user, isLoading, router]);
 
-    const handleLogin = async (values: any) => {
+    const handleLogin = async (values: { email: string; password: string }) => {
         try {
             await login(values.email, values.password);
-
             toast.success("Login berhasil!");
             router.push("/");
         } catch (error: any) {
-            //Menghandle error saat login
-            const message = error.response?.data?.message;
-            toast.error(`Login gagal! Silakan coba lagi. ${message}`);
+            //Menghandle error saat registrasi
+            toast.error(
+                `Login gagal! Periksa kembali email dan password Anda. ${error.message}`
+            );
         }
     };
 

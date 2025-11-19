@@ -1,4 +1,4 @@
-import { TUser } from "@/types/user.types";
+import { TUser } from "../types/user.types";
 import { jwtDecode } from "jwt-decode";
 
 export const getToken = (): string | null => {
