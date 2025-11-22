@@ -7,10 +7,10 @@ import {
     useState,
     ReactNode,
 } from "react";
-import { TUser } from "@/types/user.types";
-import API from "@/lib/axiosInstance";
+import { TUser } from "../types/user.types";
+import API from "../lib/axiosInstance";
 import { jwtDecode } from "jwt-decode";
-import { decodeToken, getToken, removeToken, setToken } from "@/utils/auth";
+import { decodeToken, getToken, removeToken, setToken } from "../utils/auth";
 
 interface AuthContextType {
     user: TUser | null;

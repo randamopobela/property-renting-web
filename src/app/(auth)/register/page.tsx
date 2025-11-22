@@ -27,16 +27,17 @@ const SignUpSchema = Yup.object().shape({
         .min(10, "Nomor telepon minimal 10 digit"),
     password: Yup.string()
         .min(8, "Password minimal 8 karakter")
-        .matches(/[a-z]/, "Password harus mengandung huruf kecil")
-        .matches(/[A-Z]/, "Password harus mengandung huruf besar")
-        .matches(/[0-9]/, "Password harus mengandung angka")
+        .matches(/[a-z]/, "Harus mengandung huruf kecil")
+        .matches(/[A-Z]/, "Harus mengandung huruf besar")
+        .matches(/[0-9]/, "Harus mengandung angka")
         .required("Password harus diisi"),
     confirmPassword: Yup.string()
         .oneOf([Yup.ref("password")], "Password tidak cocok")
         .required("Konfirmasi password harus diisi"),
-    agreeToTerms: Yup.boolean()
-        .oneOf([true], "Anda harus menyetujui syarat dan ketentuan")
-        .required("Anda harus menyetujui syarat dan ketentuan"),
+    agreeToTerms: Yup.boolean().oneOf(
+        [true],
+        "Anda harus menyetujui syarat dan ketentuan"
+    ),
 });
 
 export default function RegisterPage() {
@@ -46,22 +47,22 @@ export default function RegisterPage() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     useEffect(() => {
-        if (!isLoading && user) {
-            router.push("/");
-        }
+        if (!isLoading && user) router.push("/");
     }, [user, isLoading, router]);
 
     const handleRegister = async (values: any) => {
         try {
-            await API.post("/auth/register", values);
+            // Remove confirmPassword before sending
+            const { confirmPassword, agreeToTerms, ...payload } = values;
 
-            // Akan dibuat agar mengirimkan response 'berhasil' bari backend
+            await API.post("/auth/register", payload);
+
             toast.success("Registrasi berhasil! Silakan login.");
             router.push("/login");
         } catch (error: any) {
-            //Menghandle error saat registrasi
-            const message = error.response?.data?.message;
-            toast.error(`Registrasi gagal! Silakan coba lagi. ${message}`);
+            const message =
+                error.response?.data?.message || "Terjadi kesalahan.";
+            toast.error(`Registrasi gagal! ${message}`);
         }
     };
 
@@ -86,9 +87,9 @@ export default function RegisterPage() {
                         validationSchema={SignUpSchema}
                         onSubmit={handleRegister}
                     >
-                        {({ isSubmitting, setFieldValue, values }) => (
+                        {({ isSubmitting, setFieldValue }) => (
                             <Form className="space-y-4">
-                                {/* FIRST NAME */}
+                                {/* First Name */}
                                 <div>
                                     <Field
                                         name="firstName"
@@ -102,7 +103,7 @@ export default function RegisterPage() {
                                     />
                                 </div>
 
-                                {/* LAST NAME */}
+                                {/* Last Name */}
                                 <div>
                                     <Field
                                         name="lastName"
@@ -116,12 +117,12 @@ export default function RegisterPage() {
                                     />
                                 </div>
 
-                                {/* EMAIL */}
+                                {/* Email */}
                                 <div>
                                     <Field
                                         name="email"
-                                        as={Input}
                                         type="email"
+                                        as={Input}
                                         placeholder="Email"
                                     />
                                     <ErrorMessage
@@ -131,7 +132,7 @@ export default function RegisterPage() {
                                     />
                                 </div>
 
-                                {/* PHONE */}
+                                {/* Phone */}
                                 <div>
                                     <Field
                                         name="phone"
@@ -145,7 +146,7 @@ export default function RegisterPage() {
                                     />
                                 </div>
 
-                                {/* PASSWORD */}
+                                {/* Password */}
                                 <div className="relative">
                                     <Field
                                         name="password"
@@ -162,7 +163,7 @@ export default function RegisterPage() {
                                         onClick={() =>
                                             setShowPassword((prev) => !prev)
                                         }
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2"
                                     >
                                         {showPassword ? (
                                             <Eye size={18} />
@@ -178,7 +179,7 @@ export default function RegisterPage() {
                                     />
                                 </div>
 
-                                {/* CONFIRM PASSWORD */}
+                                {/* Confirm Password */}
                                 <div className="relative">
                                     <Field
                                         name="confirmPassword"
@@ -199,7 +200,7 @@ export default function RegisterPage() {
                                                 (prev) => !prev
                                             )
                                         }
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2"
                                     >
                                         {showConfirmPassword ? (
                                             <Eye size={18} />
@@ -215,21 +216,20 @@ export default function RegisterPage() {
                                     />
                                 </div>
 
-                                {/* TERMS & CONDITIONS */}
-                                <div className="flex items-center space-x-2">
+                                {/* Terms & Conditions */}
+                                <div className="flex items-center gap-2">
                                     <Checkbox
                                         id="agreeToTerms"
-                                        checked={values.agreeToTerms}
-                                        onCheckedChange={(checked) =>
+                                        onCheckedChange={(val) =>
                                             setFieldValue(
                                                 "agreeToTerms",
-                                                checked
+                                                Boolean(val)
                                             )
                                         }
                                     />
                                     <label
                                         htmlFor="agreeToTerms"
-                                        className="text-sm text-gray-700 cursor-pointer"
+                                        className="text-sm cursor-pointer"
                                     >
                                         Saya menyetujui syarat & ketentuan
                                     </label>
@@ -240,7 +240,6 @@ export default function RegisterPage() {
                                     className="text-red-500 text-sm"
                                 />
 
-                                {/* SUBMIT BUTTON */}
                                 <Button
                                     type="submit"
                                     disabled={isSubmitting}
