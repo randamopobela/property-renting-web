@@ -32,3 +32,12 @@ export const uploadPaymentProofService = async (bookingId: string, file: File) =
     throw error;
   }
 };
+
+export const getMyBookingsService = async () => {
+  try {
+    const response = await API.get<{ message: string; data: any[] }>("/bookings/my-bookings");
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
