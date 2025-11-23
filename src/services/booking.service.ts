@@ -1,5 +1,5 @@
 import API from "@/lib/axiosInstance"
-import { CreateBookingParams, BookingResponse } from "../types/booking";
+import { CreateBookingParams, BookingResponse } from "@/types/booking.types";
 
 export const createBookingService = async (params: CreateBookingParams) => {
   try {
@@ -8,6 +8,23 @@ export const createBookingService = async (params: CreateBookingParams) => {
       checkIn: params.checkIn,
       checkOut: params.checkOut,
       guests: params.guests,
+    });
+    
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const uploadPaymentProofService = async (bookingId: string, file: File) => {
+  try {
+    const formData = new FormData();
+    formData.append("paymentProof", file); 
+
+    const response = await API.post(`/bookings/${bookingId}/payment`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
     
     return response.data;
