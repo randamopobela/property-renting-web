@@ -50,3 +50,12 @@ export const getBookingDetailService = async (bookingId: string) => {
     throw error;
   }
 };
+
+export const getRoomDetailService = async (roomId: string) => {
+  try {
+    const response = await API.get(`/bookings/room/${roomId}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
