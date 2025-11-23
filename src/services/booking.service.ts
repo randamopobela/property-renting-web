@@ -41,3 +41,12 @@ export const getMyBookingsService = async () => {
     throw error;
   }
 };
+
+export const getBookingDetailService = async (bookingId: string) => {
+  try {
+    const response = await API.get<{ message: string; data: any }>(`/bookings/${bookingId}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
