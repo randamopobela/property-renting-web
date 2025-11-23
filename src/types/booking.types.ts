@@ -34,7 +34,7 @@ export interface Booking {
   }[];
 }
 
-export interface CreateBookingResponse {
+export interface BookingResponse {
   message: string;
   data: Booking;
 }
