@@ -148,29 +148,33 @@ export default function RegisterPage() {
 
                                 {/* Password */}
                                 <div className="relative">
-                                    <Field
-                                        name="password"
-                                        as={Input}
-                                        type={
-                                            showPassword ? "text" : "password"
-                                        }
-                                        placeholder="Password"
-                                        className="pr-10"
-                                    />
+                                    <div className="relative">
+                                        <Field
+                                            name="password"
+                                            as={Input}
+                                            type={
+                                                showPassword
+                                                    ? "text"
+                                                    : "password"
+                                            }
+                                            placeholder="Password"
+                                            className="pr-10"
+                                        />
 
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setShowPassword((prev) => !prev)
-                                        }
-                                        className="absolute right-3 top-1/2 -translate-y-1/2"
-                                    >
-                                        {showPassword ? (
-                                            <Eye size={18} />
-                                        ) : (
-                                            <EyeClosed size={18} />
-                                        )}
-                                    </button>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setShowPassword((prev) => !prev)
+                                            }
+                                            className="absolute right-3 top-1/2 -translate-y-1/2"
+                                        >
+                                            {showPassword ? (
+                                                <Eye size={18} />
+                                            ) : (
+                                                <EyeClosed size={18} />
+                                            )}
+                                        </button>
+                                    </div>
 
                                     <ErrorMessage
                                         name="password"
@@ -181,33 +185,35 @@ export default function RegisterPage() {
 
                                 {/* Confirm Password */}
                                 <div className="relative">
-                                    <Field
-                                        name="confirmPassword"
-                                        as={Input}
-                                        type={
-                                            showConfirmPassword
-                                                ? "text"
-                                                : "password"
-                                        }
-                                        placeholder="Konfirmasi password"
-                                        className="pr-10"
-                                    />
+                                    <div className="relative">
+                                        <Field
+                                            name="confirmPassword"
+                                            as={Input}
+                                            type={
+                                                showConfirmPassword
+                                                    ? "text"
+                                                    : "password"
+                                            }
+                                            placeholder="Konfirmasi password"
+                                            className="pr-10"
+                                        />
 
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setShowConfirmPassword(
-                                                (prev) => !prev
-                                            )
-                                        }
-                                        className="absolute right-3 top-1/2 -translate-y-1/2"
-                                    >
-                                        {showConfirmPassword ? (
-                                            <Eye size={18} />
-                                        ) : (
-                                            <EyeClosed size={18} />
-                                        )}
-                                    </button>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setShowConfirmPassword(
+                                                    (prev) => !prev
+                                                )
+                                            }
+                                            className="absolute right-3 top-1/2 -translate-y-1/2"
+                                        >
+                                            {showConfirmPassword ? (
+                                                <Eye size={18} />
+                                            ) : (
+                                                <EyeClosed size={18} />
+                                            )}
+                                        </button>
+                                    </div>
 
                                     <ErrorMessage
                                         name="confirmPassword"

@@ -77,29 +77,33 @@ export default function LoginPage() {
                                 </div>
 
                                 <div className="relative">
-                                    <Field
-                                        name="password"
-                                        as={Input}
-                                        type={
-                                            showPassword ? "text" : "password"
-                                        }
-                                        placeholder="Password"
-                                        className="pr-10"
-                                    />
+                                    <div className="relative">
+                                        <Field
+                                            name="password"
+                                            as={Input}
+                                            type={
+                                                showPassword
+                                                    ? "text"
+                                                    : "password"
+                                            }
+                                            placeholder="Password"
+                                            className="pr-10"
+                                        />
 
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setShowPassword((prev) => !prev)
-                                        }
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800"
-                                    >
-                                        {showPassword ? (
-                                            <Eye size={18} />
-                                        ) : (
-                                            <EyeClosed size={18} />
-                                        )}
-                                    </button>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setShowPassword((prev) => !prev)
+                                            }
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800"
+                                        >
+                                            {showPassword ? (
+                                                <Eye size={18} />
+                                            ) : (
+                                                <EyeClosed size={18} />
+                                            )}
+                                        </button>
+                                    </div>
 
                                     <ErrorMessage
                                         name="password"

@@ -1,9 +1,9 @@
 import axios from "axios";
 
 const API = axios.create({
-  // 👇 HAPUS process.env, PAKAI HARDCODE DULU BIAR YAKIN
-  // Pastikan port-nya 8000 (atau sesuai terminal backend Anda)
-  baseURL: "http://localhost:8000/api", 
+    baseURL: process.env.NEXT_PUBLIC_API_URL
+        ? `${process.env.NEXT_PUBLIC_API_URL}/api`
+        : "http://localhost:8000/api",
 });
 
 // Interceptor untuk Authorization otomatis
