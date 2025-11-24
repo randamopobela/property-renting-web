@@ -59,3 +59,12 @@ export const getRoomDetailService = async (roomId: string) => {
     throw error;
   }
 };
+
+export const cancelBookingService = async (bookingId: string) => {
+  try {
+    const response = await API.patch(`/bookings/${bookingId}/cancel`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

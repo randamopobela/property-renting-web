@@ -1,13 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { Booking } from "@/types/booking.types";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge"; // Pastikan rekan Anda sudah install Badge shadcn
-import { CalendarDays, MapPin, Building2, ChevronRight } from "lucide-react";
+import { CalendarDays, MapPin, Building2, Loader2, XCircle } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { useRouter } from "next/navigation";
+import { cancelBookingService } from "@/services/booking.service";
+import { toast } from "sonner";
 
 // Helper untuk warna status
 const getStatusColor = (status: string) => {
@@ -27,6 +30,7 @@ const formatStatus = (status: string) => {
 
 export default function BookingCard({ booking }: { booking: Booking }) {
   const router = useRouter();
+  const [isCancelling, setIsCancelling] = useState(false);
 
   // Handle tombol aksi
   const handleAction = () => {
@@ -36,6 +40,31 @@ export default function BookingCard({ booking }: { booking: Booking }) {
       // Nanti bisa ke halaman detail (Hari ke-9/10)
       alert("Halaman detail booking belum dibuat.");
     }
+  };
+
+  const handlePay = () => {
+    router.push(`/booking/payment/${booking.id}`);
+  };
+
+  const handleCancel = async () => {
+    // Konfirmasi sederhana pakai window.confirm dulu (bisa diganti Modal nanti)
+    const isSure = window.confirm("Apakah Anda yakin ingin membatalkan pesanan ini?");
+    if (!isSure) return;
+
+    setIsCancelling(true);
+    try {
+        await cancelBookingService(booking.id);
+        toast.success("Pesanan berhasil dibatalkan");
+        window.location.reload();
+    } catch (error: any) {
+        console.error(error);
+        toast.error("Gagal membatalkan pesanan");
+    } finally {
+        setIsCancelling(false);
+    }
+  };
+  const handleDetail = () => {
+      alert("Fitur Detail Booking (Akan dikerjakan nanti)");
   };
 
   return (
@@ -93,17 +122,32 @@ export default function BookingCard({ booking }: { booking: Booking }) {
           </div>
         </div>
 
-        {/* Kolom Aksi (Kanan/Bawah) */}
-        <div className="p-4 md:p-6 bg-gray-50 flex items-center justify-center md:w-48 border-l border-gray-100">
+        {/* Kolom Aksi (Kanan) */}
+        <div className="p-4 md:p-6 bg-gray-50 flex flex-col gap-3 justify-center md:w-56 border-l border-gray-100 shrink-0">
            {booking.status === "PENDING" ? (
-               <Button 
-                 className="w-full bg-teal-600 hover:bg-teal-700" 
-                 onClick={handleAction}
-               >
-                 Bayar Sekarang
-               </Button>
+               <>
+                 {/* Tombol Bayar */}
+                 <Button 
+                   className="w-full bg-teal-600 hover:bg-teal-700 shadow-sm" 
+                   onClick={handlePay}
+                   disabled={isCancelling}
+                 >
+                   Bayar Sekarang
+                 </Button>
+                 
+                 {/* Tombol Cancel (Baru) */}
+                 <Button 
+                   variant="outline" 
+                   className="w-full text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
+                   onClick={handleCancel}
+                   disabled={isCancelling}
+                 >
+                   {isCancelling ? <Loader2 className="h-4 w-4 animate-spin"/> : "Batalkan"}
+                 </Button>
+               </>
            ) : (
-               <Button variant="outline" className="w-full" onClick={handleAction}>
+               /* Tombol Detail untuk status selain Pending */
+               <Button variant="outline" className="w-full" onClick={handleDetail}>
                  Lihat Detail
                </Button>
            )}
