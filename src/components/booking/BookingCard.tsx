@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Booking } from "@/types/booking.types";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge"; // Pastikan rekan Anda sudah install Badge shadcn
+import { Badge } from "@/components/ui/badge"; // install Badge shadcn
 import { CalendarDays, MapPin, Building2, Loader2, XCircle } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
@@ -12,7 +12,6 @@ import { useRouter } from "next/navigation";
 import { cancelBookingService } from "@/services/booking.service";
 import { toast } from "sonner";
 
-// Helper untuk warna status
 const getStatusColor = (status: string) => {
   switch (status) {
     case "PENDING": return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
@@ -35,9 +34,9 @@ export default function BookingCard({ booking }: { booking: Booking }) {
   // Handle tombol aksi
   const handleAction = () => {
     if (booking.status === "PENDING") {
-      router.push(`/booking/payment/${booking.id}`); // Lanjut Bayar
+      router.push(`/booking/payment/${booking.id}`);
     } else {
-      // Nanti bisa ke halaman detail (Hari ke-9/10)
+      // Nanti bisa ke halaman detail
       alert("Halaman detail booking belum dibuat.");
     }
   };
@@ -135,7 +134,7 @@ export default function BookingCard({ booking }: { booking: Booking }) {
                    Bayar Sekarang
                  </Button>
                  
-                 {/* Tombol Cancel (Baru) */}
+                 {/* Tombol Cancel */}
                  <Button 
                    variant="outline" 
                    className="w-full text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
@@ -146,7 +145,6 @@ export default function BookingCard({ booking }: { booking: Booking }) {
                  </Button>
                </>
            ) : (
-               /* Tombol Detail untuk status selain Pending */
                <Button variant="outline" className="w-full" onClick={handleDetail}>
                  Lihat Detail
                </Button>
