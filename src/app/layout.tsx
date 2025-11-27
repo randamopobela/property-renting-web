@@ -4,10 +4,11 @@ import { Toaster } from "@/components/ui/sonner";
 import NavbarComponent from "@/components/Navbar";
 // import FooterComponent from "@/components/FooterComponent";
 import ThemeInit from "@/components/ThemeInit";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { SessionProvider } from "next-auth/react";
 
 // Optional Google Font (lebih clean & modern)
 import { Inter } from "next/font/google";
+import { Providers } from "./provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -26,13 +27,13 @@ export default function RootLayout({
             <body
                 className={`${inter.className} antialiased bg-white text-gray-900`}
             >
-                <AuthProvider>
+                <Providers>
                     <ThemeInit />
                     <NavbarComponent />
                     <main className="min-h-screen">{children}</main>
                     {/* <FooterComponent /> */}
                     <Toaster position="top-right" richColors />
-                </AuthProvider>
+                </Providers>
             </body>
         </html>
     );
