@@ -20,3 +20,12 @@ export const verifyPaymentService = async (bookingId: string, action: "APPROVE" 
     throw error;
   }
 };
+
+export const replyReviewService = async (reviewId: string, reply: string) => {
+  try {
+    const response = await API.post(`/reviews/${reviewId}/reply`, { reply });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
