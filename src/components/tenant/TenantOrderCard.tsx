@@ -12,8 +12,9 @@ import { toast } from "sonner";
 import { ExternalLink, Clock, User, MessageSquare } from "lucide-react";
 import ReplyModal from "./ReplyModal";
 
-// Helper URL Gambar (Pastikan sesuai dengan backend Anda)
-const BASE_IMAGE_URL = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:8000";
+// Helper URL Gambar
+  const BASE_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  const BASE_ROOT_URL = BASE_API_URL.replace("/api", "");
 
 // 👇 PERBAIKAN DI SINI: Gunakan 'Omit' untuk membuang definisi review lama agar tidak konflik
 interface ExtendedBooking extends Omit<Booking, 'review'> {
@@ -51,11 +52,40 @@ export default function TenantOrderCard({ booking, onSuccess }: { booking: Exten
   };
 
   // Fungsi Buka Bukti Bayar
-  const handleOpenProof = () => {
-      if (booking.payments?.[0]?.proofUrl) {
-          window.open(`${BASE_IMAGE_URL}${booking.payments[0].proofUrl}`, '_blank');
+ const handleOpenProof = () => {
+      // 1. DEBUGGING: Lihat apa isi data sebenarnya di Console
+      console.log("🔍 Debug Booking ID:", booking.id);
+      console.log("🔍 Debug Payments Data:", booking.payments);
+
+      // 2. LOGIKA AMAN (Robust)
+      // Cek apakah payments itu Array (List) atau Object tunggal, lalu ambil yang pertama
+      let proofUrl: string | null | undefined = null;
+
+      if (Array.isArray(booking.payments) && booking.payments.length > 0) {
+          // Jika Array, ambil index ke-0
+          proofUrl = booking.payments[0].proofUrl;
+      } else if (booking.payments && typeof booking.payments === 'object') {
+          // Jika ternyata Object (kadang terjadi tergantung prisma include), ambil langsung
+          // @ts-ignore
+          proofUrl = booking.payments.proofUrl;
+      }
+
+      console.log("🔍 Detected Proof URL:", proofUrl);
+
+      // 3. VALIDASI
+      if (!proofUrl) {
+          toast.error(`Bukti bayar tidak terbaca. Cek Console (F12).`);
+          return;
+      }
+
+      // 4. BUKA LINK
+      if (proofUrl.startsWith("http")) {
+          // Link Online (seperti placehold.co)
+          window.open(proofUrl, '_blank');
       } else {
-          toast.error("Bukti bayar tidak ditemukan");
+          // Link Lokal Backend
+          const finalUrl = proofUrl.startsWith("/") ? `${BASE_ROOT_URL}${proofUrl}` : `${BASE_ROOT_URL}/${proofUrl}`;
+          window.open(finalUrl, '_blank');
       }
   };
 

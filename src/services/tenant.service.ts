@@ -1,10 +1,15 @@
 import API from "@/lib/axiosInstance";
 import { Booking } from "@/types/booking.types"; 
 
-// 1. Ambil Daftar Pesanan Tenant
-export const getTenantBookingsService = async () => {
+interface BookingParams {
+  page?: number;
+  limit?: number;
+  status?: string;
+}
+
+export const getTenantBookingsService = async (params?: BookingParams) => {
   try {
-    const response = await API.get<{ message: string; data: Booking[] }>("/tenant/bookings");
+    const response = await API.get("/tenant/bookings", { params });
     return response.data;
   } catch (error) {
     throw error;
