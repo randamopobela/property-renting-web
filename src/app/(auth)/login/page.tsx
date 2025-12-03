@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Eye, EyeClosed } from "lucide-react";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import LoginWithGoogle from "@/components/auth/LoginWithGoogle";
 
 const SignInSchema = Yup.object().shape({
@@ -27,6 +27,11 @@ const SignInSchema = Yup.object().shape({
 export default function LoginPage() {
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
+    const { data: session } = useSession();
+
+    useEffect(() => {
+        if (session) router.push("/");
+    }, [session, router]);
 
     const handleLogin = async (values: { email: string; password: string }) => {
         const res = await signIn("credentials", {
