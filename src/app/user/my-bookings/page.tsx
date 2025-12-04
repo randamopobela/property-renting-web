@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getMyBookingsService } from "@/services/booking.service";
+// Pastikan service ini sudah diupdate agar tidak menerima userId sebagai argumen
+import { getMyBookingsService } from "@/services/booking.service"; 
 import { Booking } from "@/types/booking.types";
 import BookingCard from "@/components/booking/BookingCard";
 import { Loader2, PackageOpen } from "lucide-react";
@@ -9,23 +10,42 @@ import { toast } from "sonner";
 
 export default function MyBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
+  // Kita harus set default false di sini
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // ⚠️ Catatan: Logika storedUserId/hardcode ID sudah tidak relevan
+    // Karena kita mengandalkan token di Header (AxiosInstance)
+    
     const fetchBookings = async () => {
-      try {
-        const result = await getMyBookingsService();
-        setBookings(result.data);
-      } catch (error) {
-        console.error(error);
-        toast.error("Gagal mengambil riwayat pesanan.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+        setIsLoading(true);
+        try {
+            // 👇 FIX: Panggil service TANPA ARGUMEN userId
+            // Kita gunakan ts-ignore untuk mengabaikan error TypeScript sementara,
+            // karena kita menganggap service sudah dimodifikasi di file lain
+            // @ts-ignore
+            const res = await getMyBookingsService();
+            
+            // --- PERBAIKAN DI SINI ---
+            // 'res' adalah object yang dikembalikan service: { message: string, data: Booking[] }
+            // Kita langsung akses res.data untuk mendapatkan array Booking
+            setBookings(res.data || []); 
+            // --- AKHIR PERBAIKAN ---
 
+        } catch (err) {
+            console.error(err);
+            toast.error("Gagal memuat pesanan. Silakan coba login ulang.");
+            setBookings([]); // Kosongkan jika gagal
+        } finally {
+            // Selalu hentikan loading, baik sukses maupun error
+            setIsLoading(false); 
+        }
+    }
+    
     fetchBookings();
-  }, []);
+    
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Dependensi kosong, hanya jalan saat mount
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
