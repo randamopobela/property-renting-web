@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import API from "@/lib/axiosInstance"; // sesuaikan dengan konfigurasi projek kamu
 import { Mail } from "lucide-react";
+import axios from "axios";
 
 const ResendSchema = Yup.object().shape({
     email: Yup.string()
@@ -21,9 +22,10 @@ export default function ResendVerificationPage() {
 
     const handleResend = async (values: { email: string }) => {
         try {
-            const res = await API.post("/auth/resend-email", {
-                email: values.email,
-            });
+            const res = await axios.post(
+                `${process.env.NEXT_PUBLIC_API_URL}/auth/resend-email`,
+                { email: values.email }
+            );
 
             toast.success(
                 res.data?.message || "Email verifikasi telah dikirim ulang!"
