@@ -32,9 +32,17 @@ export interface Booking {
     proofUrl: string;
     status: string;
   }[];
+
+  review?: {
+    id: string;
+    comment: string;
+    rating: number;
+    reply?: string;
+    repliedAt?: string;
+  };
 }
 
-export interface CreateBookingResponse {
+export interface BookingResponse {
   message: string;
   data: Booking;
 }

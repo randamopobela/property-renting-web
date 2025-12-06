@@ -8,8 +8,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
 import { Eye, EyeClosed } from "lucide-react";
+import { signIn, useSession } from "next-auth/react";
+import LoginWithGoogle from "@/components/auth/LoginWithGoogle";
 
 const SignInSchema = Yup.object().shape({
     email: Yup.string()
@@ -25,26 +26,37 @@ const SignInSchema = Yup.object().shape({
 
 export default function LoginPage() {
     const router = useRouter();
-    const { user, login, isLoading } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
+    const { data: session } = useSession();
 
     useEffect(() => {
-        if (!isLoading && user) {
-            router.push("/");
-        }
-    }, [user, isLoading, router]);
+        if (session) router.push("/");
+    }, [session, router]);
 
     const handleLogin = async (values: { email: string; password: string }) => {
-        try {
-            await login(values.email, values.password);
-            toast.success("Login berhasil!");
-            router.push("/");
-        } catch (error: any) {
-            //Menghandle error saat registrasi
-            toast.error(
-                `Login gagal! Periksa kembali email dan password Anda. ${error.message}`
-            );
+        const res = await signIn("credentials", {
+            email: values.email,
+            password: values.password,
+            redirect: false,
+        });
+
+        console.log("Login berhasil:", res);
+
+        if (res?.error) {
+            if (res.error.includes("CredentialsSignin")) {
+                toast.error("Email Anda belum diverifikasi.");
+                router.push("/resend-email");
+                return;
+            }
+
+            toast.error("Email atau password salah.");
+            return;
         }
+
+        console.log("Login berhasil:", res);
+
+        toast.success("Login berhasil!");
+        router.push("/");
     };
 
     return (
@@ -77,29 +89,33 @@ export default function LoginPage() {
                                 </div>
 
                                 <div className="relative">
-                                    <Field
-                                        name="password"
-                                        as={Input}
-                                        type={
-                                            showPassword ? "text" : "password"
-                                        }
-                                        placeholder="Password"
-                                        className="pr-10"
-                                    />
+                                    <div className="relative">
+                                        <Field
+                                            name="password"
+                                            as={Input}
+                                            type={
+                                                showPassword
+                                                    ? "text"
+                                                    : "password"
+                                            }
+                                            placeholder="Password"
+                                            className="pr-10"
+                                        />
 
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setShowPassword((prev) => !prev)
-                                        }
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800"
-                                    >
-                                        {showPassword ? (
-                                            <Eye size={18} />
-                                        ) : (
-                                            <EyeClosed size={18} />
-                                        )}
-                                    </button>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setShowPassword((prev) => !prev)
+                                            }
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800"
+                                        >
+                                            {showPassword ? (
+                                                <Eye size={18} />
+                                            ) : (
+                                                <EyeClosed size={18} />
+                                            )}
+                                        </button>
+                                    </div>
 
                                     <ErrorMessage
                                         name="password"
@@ -127,6 +143,10 @@ export default function LoginPage() {
                             </Form>
                         )}
                     </Formik>
+
+                    <div className="my-4">
+                        <LoginWithGoogle />
+                    </div>
 
                     <p className="text-center text-sm mt-4">
                         Belum punya akun?{" "}

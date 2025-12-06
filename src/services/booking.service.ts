@@ -1,5 +1,5 @@
 import API from "@/lib/axiosInstance"
-import { CreateBookingParams, BookingResponse } from "../types/booking";
+import { CreateBookingParams, BookingResponse } from "@/types/booking.types";
 
 export const createBookingService = async (params: CreateBookingParams) => {
   try {
@@ -10,6 +10,61 @@ export const createBookingService = async (params: CreateBookingParams) => {
       guests: params.guests,
     });
     
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const uploadPaymentProofService = async (bookingId: string, file: File) => {
+  try {
+    const formData = new FormData();
+    formData.append("paymentProof", file); 
+
+    const response = await API.post(`/bookings/${bookingId}/payment`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getMyBookingsService = async () => {
+  try {
+    const response = await API.get<{ message: string; data: any[] }>(`/bookings/my-bookings`);
+    
+    return response.data;
+  } catch (error) {
+    console.error("🔥 Error fetching user bookings:", error);
+    throw error;
+  }
+};
+
+export const getBookingDetailService = async (bookingId: string) => {
+  try {
+    const response = await API.get<{ message: string; data: any }>(`/bookings/${bookingId}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getRoomDetailService = async (roomId: string) => {
+  try {
+    const response = await API.get(`/bookings/room/${roomId}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const cancelBookingService = async (bookingId: string) => {
+  try {
+    const response = await API.patch(`/bookings/${bookingId}/cancel`);
     return response.data;
   } catch (error) {
     throw error;

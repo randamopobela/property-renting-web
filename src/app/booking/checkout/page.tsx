@@ -1,43 +1,66 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
-import { id } from "date-fns/locale";
-import { createBookingService } from "@/services/booking.service";
+import { id } from "date-fns/locale"; // Locale Indonesia
+import { createBookingService, getRoomDetailService } from "@/services/booking.service";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { CalendarDays, MapPin, Users, Loader2, ArrowRight } from "lucide-react";
+import { CalendarDays, MapPin, Users, Loader2, ArrowRight, UserCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-
+  // 1. Ambil Data dari URL
   const roomId = searchParams.get("roomId") || "";
   const checkInStr = searchParams.get("checkIn") || "";
   const checkOutStr = searchParams.get("checkOut") || "";
   const guestsStr = searchParams.get("guests") || "1";
-  
-  // Hardcode harga sementara (karena belum fetch detail room dari F1)
-  const basePricePerNight = 1000000; 
 
   const [isLoading, setIsLoading] = useState(false);
+  const [roomData, setRoomData] = useState<any>(null); 
 
+  // 2. Logika Harga & Durasi
+  const basePricePerNight = roomData?.basePrice || 0;
+
+  // Parse Tanggal
   const startDate = checkInStr ? new Date(checkInStr) : new Date();
   const endDate = checkOutStr ? new Date(checkOutStr) : new Date();
   
+  // Hitung Durasi Malam
   const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
   const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
   
   const totalPrice = basePricePerNight * nights;
 
+  // 3. Fetch Data Kamar
+  useEffect(() => {
+    if (roomId) {
+        getRoomDetailService(roomId)
+            .then((res) => {
+                setRoomData(res.data);
+            })
+            .catch((err) => {
+                console.error("Gagal ambil harga kamar", err);
+                toast.error("Gagal memuat info kamar");
+            });
+    }
+  }, [roomId]);
+
+  // 4. Handle Submit Booking
   const handleConfirmBooking = async () => {
     if (!roomId) {
       toast.error("Terjadi kesalahan: Data kamar tidak ditemukan.");
       return;
+    }
+
+    if (basePricePerNight === 0) {
+        toast.error("Sedang memuat data harga, mohon tunggu sebentar...");
+        return;
     }
 
     setIsLoading(true);
@@ -50,9 +73,6 @@ function CheckoutContent() {
       });
 
       toast.success("Pesanan berhasil dibuat!");
-      
-      // Arahkan ke halaman pembayaran (Fitur Hari ke-7)
-      // Gunakan ID booking yang dikembalikan backend
       router.push(`/booking/payment/${result.data.id}`);
 
     } catch (error: any) {
@@ -64,162 +84,166 @@ function CheckoutContent() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-teal-50 via-cyan-50 to-white py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-teal-800 mb-2">Konfirmasi Pesanan</h1>
-        <p className="text-gray-600 mb-8">Mohon periksa kembali detail pesanan Anda sebelum melanjutkan.</p>
-
+    <div className="min-h-screen bg-gray-50 py-12 px-4">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-3xl font-bold text-teal-900 mb-2">Konfirmasi Pesanan</h1>
+        <p className="text-gray-500 mb-8">Pastikan detail pesanan Anda sudah benar.</p>
+        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Kolom Kiri: Detail Properti & Tamu */}
+          
+          {/* === KOLOM KIRI (INFO UTAMA) === */}
           <div className="md:col-span-2 space-y-6">
             
-            {/* CARD 1: INFORMASI PENGINAPAN */}
-            {/* Tambahkan 'p-6' agar isinya tidak mepet pinggir */}
-            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-md p-6">
-              <CardHeader className="p-0 mb-4"> {/* p-0 biar ngikut parent, mb-4 kasih jarak ke content */}
-                <CardTitle className="flex items-center gap-2 text-teal-700 text-xl">
+            {/* CARD 1: INFO PENGINAPAN */}
+            <Card className="border-0 shadow-sm bg-white p-6">
+              <CardHeader className="p-0 mb-4">
+                <CardTitle className="flex items-center gap-2 text-teal-700 text-lg">
                    <MapPin className="h-5 w-5" /> Informasi Penginapan
                 </CardTitle>
               </CardHeader>
-              
-              <CardContent className="p-0"> {/* p-0 karena parent sudah p-6 */}
+              <CardContent className="p-0">
                 <div className="flex gap-4">
-                  {/* Gambar */}
-                  <div className="h-24 w-24 bg-gray-200 rounded-md overflow-hidden shrink-0">
+                  <div className="h-28 w-28 bg-gray-200 rounded-lg overflow-hidden shrink-0 shadow-sm">
                     <img 
-                      src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=300&q=80" 
+                      src={roomData?.property?.pictures?.[0]?.url || "https://source.unsplash.com/random/300x300/?hotel"} 
                       alt="Room" 
                       className="object-cover h-full w-full"
                     />
                   </div>
-                  {/* Teks */}
                   <div className="flex flex-col justify-center">
-                    <h3 className="font-bold text-lg text-gray-800">Luxury Room - Villa Indah</h3>
+                    <h3 className="font-bold text-xl text-gray-800">
+                        {roomData ? `${roomData.type} - ${roomData.property.name}` : "Memuat..."}
+                    </h3>
                     <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
-                      <MapPin className="h-3 w-3" /> Jakarta Selatan
+                      <MapPin className="h-4 w-4" /> {roomData?.property?.city || "Loading City..."}
                     </p>
-                    <p className="text-sm text-gray-500 mt-2 line-clamp-2">
-                      Kamar Tipe Deluxe dengan pemandangan kota, fasilitas lengkap, dan akses mudah.
-                    </p>
+                    <div className="mt-3 inline-block bg-teal-50 text-teal-700 text-xs px-2 py-1 rounded-md font-medium">
+                        Kapasitas: {roomData?.capacity || 2} Orang
+                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
-
-            {/* CARD 2: DATA TAMU */}
-            {/* Tambahkan 'p-6' di sini juga */}
-            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-md p-6">
+            
+            {/* CARD 2: DATA TAMU (YANG HILANG TADI) */}
+            <Card className="border-0 shadow-sm bg-white p-6">
               <CardHeader className="p-0 mb-4">
-                <CardTitle className="flex items-center gap-2 text-teal-700 text-xl">
-                   <Users className="h-5 w-5" /> Data Tamu
+                <CardTitle className="flex items-center gap-2 text-teal-700 text-lg">
+                   <Users className="h-5 w-5" /> Data Pemesan
                 </CardTitle>
               </CardHeader>
-              
               <CardContent className="p-0">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> {/* Tambah gap-6 biar lega */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Nama Pemesan</label>
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wide flex gap-2 items-center">
+                        <UserCircle2 className="h-4 w-4" /> Nama Pemesan
+                      </label>
                       <Input 
                         value="Guest User (Anda)" 
                         disabled 
-                        className="bg-gray-50 border-teal-100 text-gray-700 font-medium" 
+                        className="bg-gray-50 border-gray-200 text-gray-700 font-medium" 
                       />
                    </div>
                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Jumlah Tamu</label>
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wide flex gap-2 items-center">
+                        <Users className="h-4 w-4" /> Jumlah Tamu
+                      </label>
                       <Input 
                         value={`${guestsStr} Orang`} 
                         disabled 
-                        className="bg-gray-50 border-teal-100 text-gray-700 font-medium" 
+                        className="bg-gray-50 border-gray-200 text-gray-700 font-medium" 
                       />
                    </div>
                 </div>
+                <p className="text-xs mt-4 bg-yellow-50 text-yellow-700 p-3 rounded-md border border-yellow-100">
+                    ⚠️ Pastikan data di atas sudah benar. Tiket akan dikirimkan ke email akun Anda.
+                </p>
+              </CardContent>
+            </Card>
+
+          </div>
+
+          {/* === KOLOM KANAN (RINCIAN HARGA & TANGGAL) === */}
+          <div className="md:col-span-1">
+            <Card className="border-0 shadow-lg bg-teal-600 text-white sticky top-24 overflow-hidden">
+              
+              <CardHeader className="p-6 border-b border-teal-500">
+                <CardTitle className="text-lg flex items-center gap-2">
+                    <CalendarDays className="h-5 w-5" /> Rincian Harga
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent className="p-6 space-y-6">
+                
+                {/* Bagian Tanggal (YANG HILANG TADI) */}
+                <div className="space-y-4 text-teal-50">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="opacity-80">Check-In</span>
+                    <span className="font-semibold text-white">
+                        {checkInStr ? format(startDate, 'dd MMM yyyy', { locale: id }) : '-'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="opacity-80">Check-Out</span>
+                    <span className="font-semibold text-white">
+                        {checkOutStr ? format(endDate, 'dd MMM yyyy', { locale: id }) : '-'}
+                    </span>
+                  </div>
+                  <div className="pt-3 border-t border-teal-500 flex justify-between text-sm">
+                    <span className="opacity-80">Total Durasi</span>
+                    <span className="font-bold bg-white text-teal-700 px-2 py-0.5 rounded text-xs">
+                        {nights} Malam
+                    </span>
+                  </div>
+                </div>
+
+                {/* Kalkulasi Harga */}
+                <div className="bg-white text-gray-800 p-4 rounded-lg space-y-3 text-sm shadow-md">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Harga per malam</span>
+                    <span className="font-medium">Rp {basePricePerNight.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Pajak & Layanan</span>
+                    <span className="font-medium text-green-600">Gratis</span>
+                  </div>
+                  <div className="border-t border-dashed border-gray-300 pt-3 mt-2 flex justify-between items-center">
+                    <span className="font-bold text-lg">Total Bayar</span>
+                    <span className="font-bold text-xl text-teal-700">
+                        Rp {totalPrice.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+
+                <Button 
+                    className="w-full bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold text-lg h-12 shadow-md" 
+                    onClick={handleConfirmBooking}
+                    disabled={isLoading || basePricePerNight === 0}
+                >
+                    {isLoading ? (
+                        <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Memproses...</>
+                    ) : (
+                        <>Lanjut Pembayaran <ArrowRight className="ml-2 h-5 w-5" /></>
+                    )}
+                </Button>
+                
+                <p className="text-[10px] text-center text-teal-200 opacity-80">
+                    Dengan melanjutkan, Anda menyetujui Syarat & Ketentuan StayEase.
+                </p>
+
               </CardContent>
             </Card>
           </div>
 
-          {/* Kolom Kanan: Ringkasan Harga */}
-          <div className="md:col-span-1">
-            {/* 1. Di Card Induk: Hapus padding (py-0) agar Header bisa mentok ke atas/samping. 
-       Hapus gap (gap-0) agar tidak ada jarak aneh antara Header dan Content. */}
-<Card className="border-0 shadow-xl bg-white sticky top-20 overflow-hidden py-0 gap-0">
-  
-  {/* 2. Di Header: Pastikan padding (p-6) ada di sini agar teks judul tidak mepet pinggir */}
-  <CardHeader className="bg-teal-600 text-white p-6"> 
-    <CardTitle>Rincian Harga</CardTitle>
-  </CardHeader>
-
-  {/* 3. Di Content: TAMBAHKAN padding (p-6) di sini. 
-       Ini mengembalikan kerapian yang hilang tadi karena py-0 di induk. */}
-  <CardContent className="p-6 space-y-6">
-    
-    {/* Tanggal */}
-    <div className="space-y-3">
-      <div className="flex justify-between items-center text-sm">
-        <span className="text-gray-500 flex gap-2"><CalendarDays className="h-4 w-4"/> Check-In</span>
-        <span className="font-medium">
-            {checkInStr ? format(startDate, 'dd MMM yyyy', { locale: id }) : '-'}
-        </span>
-      </div>
-      <div className="flex justify-between items-center text-sm">
-        <span className="text-gray-500 flex gap-2"><CalendarDays className="h-4 w-4"/> Check-Out</span>
-        <span className="font-medium">
-            {checkOutStr ? format(endDate, 'dd MMM yyyy', { locale: id }) : '-'}
-        </span>
-      </div>
-      <div className="pt-2 border-t border-dashed border-gray-200 flex justify-between text-sm">
-        <span>Total Durasi</span>
-        <span className="font-bold text-teal-600">{nights} Malam</span>
-      </div>
-    </div>
-
-    {/* Kalkulasi Harga */}
-    <div className="bg-gray-50 p-4 rounded-lg space-y-2 text-sm">
-      <div className="flex justify-between">
-        <span>Harga per malam</span>
-        <span>Rp {basePricePerNight.toLocaleString()}</span>
-      </div>
-      <div className="flex justify-between">
-        <span>Biaya Layanan</span>
-        <span>Rp 0</span>
-      </div>
-      <div className="border-t border-gray-300 pt-2 mt-2 flex justify-between items-center">
-        <span className="font-bold text-lg">Total</span>
-        <span className="font-bold text-xl text-teal-700">
-            Rp {totalPrice.toLocaleString()}
-        </span>
-      </div>
-    </div>
-
-    <Button 
-        className="w-full bg-teal-600 hover:bg-teal-700 text-lg h-12" 
-        onClick={handleConfirmBooking}
-        disabled={isLoading}
-    >
-        {isLoading ? (
-            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Memproses...</>
-        ) : (
-            <>Lanjut Pembayaran <ArrowRight className="ml-2 h-4 w-4" /></>
-        )}
-    </Button>
-    
-    <p className="text-xs text-center text-gray-400">
-        Pembayaran aman dan terpercaya.
-    </p>
-
-  </CardContent>
-</Card>
-          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// Wajib dibungkus Suspense di Next.js 15 saat pakai useSearchParams
 export default function CheckoutPage() {
     return (
-        <Suspense fallback={<div className="p-10 text-center">Loading Checkout...</div>}>
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-teal-600"/></div>}>
             <CheckoutContent />
         </Suspense>
     )
