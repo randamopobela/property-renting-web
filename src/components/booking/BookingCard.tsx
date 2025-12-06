@@ -21,7 +21,6 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-// Helper warna status
 const getStatusColor = (status: string) => {
   switch (status) {
     case "PENDING": return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border-yellow-200";
@@ -108,7 +107,7 @@ export default function BookingCard({ booking }: { booking: Booking }) {
                 <div className="flex items-center gap-2 bg-gray-50 p-2 rounded">
                     <CalendarDays className="h-4 w-4 text-teal-600" />
                     <span>
-                        {format(new Date(booking.checkIn), "dd MMM")} - {format(new Date(booking.checkOut), "dd MMM yyyy", { locale: id })}
+                        {format(new Date(booking.checkIn), "dd MMM yyyy", { locale: id })} - {format(new Date(booking.checkOut), "dd MMM yyyy", { locale: id })}
                     </span>
                 </div>
             </div>
