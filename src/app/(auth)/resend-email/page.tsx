@@ -32,7 +32,7 @@ export default function ResendVerificationPage() {
             );
 
             setTimeout(() => {
-                router.push("/login");
+                router.push("/verify-sent");
             }, 1500);
         } catch (error: any) {
             toast.error(
