@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { LogOut } from "lucide-react";
+import { LogOut, Home, ListOrdered } from "lucide-react"; // Menambah ListOrdered icon
 import { signOut } from "next-auth/react";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
@@ -42,6 +42,7 @@ export default function NavbarComponent() {
                     Properti
                 </Link>
 
+                {/* Dashboard Tenant Link */}
                 {user?.role === "TENANT" && (
                     <Link
                         href="/tenant/dashboard"
@@ -50,6 +51,17 @@ export default function NavbarComponent() {
                         Dashboard Tenant
                     </Link>
                 )}
+                
+                {/* 👇 FIX: Tombol Pesanan Saya (Hanya untuk GUEST) */}
+                {user?.role === "GUEST" && (
+                    <Link href="/user/my-bookings" className="hidden sm:block">
+                        <Button variant="ghost" size="sm" className="text-sm text-gray-700 hover:text-teal-700">
+                            <ListOrdered className="w-4 h-4 mr-1"/>
+                            Pesanan Saya
+                        </Button>
+                    </Link>
+                )}
+
 
                 {status === "loading" && (
                     <span className="text-sm text-gray-500">Memuat...</span>
@@ -75,13 +87,15 @@ export default function NavbarComponent() {
 
                 {status === "authenticated" && (
                     <div className="flex items-center gap-3">
+                        {/* Nama User dan Role */}
                         <span className="text-sm text-gray-700">
                             Hi, {user?.firstName}{" "}
                             <span className="text-xs text-gray-500">
                                 ({user?.role})
                             </span>
                         </span>
-
+                        
+                        {/* Tombol Logout */}
                         <Button
                             variant="outline"
                             size="icon"
