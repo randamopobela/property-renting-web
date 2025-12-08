@@ -5,6 +5,7 @@ import NavbarComponent from "@/components/Navbar";
 // import FooterComponent from "@/components/FooterComponent";
 import ThemeInit from "@/components/ThemeInit";
 import { SessionProvider } from "next-auth/react";
+import Script from "next/script"; // 👈 1. Import Script
 
 // Optional Google Font (lebih clean & modern)
 import { Inter } from "next/font/google";
@@ -22,6 +23,9 @@ export default function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+    // 2. Ambil Client Key dari .env.local
+    const midtransClientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "";
+
     return (
         <html lang="en" suppressHydrationWarning>
             <body
@@ -34,6 +38,13 @@ export default function RootLayout({
                     {/* <FooterComponent /> */}
                     <Toaster position="top-right" richColors />
                 </Providers>
+
+                {/* 3. Tambahkan Script Midtrans di sini */}
+                <Script 
+                    src="https://app.sandbox.midtrans.com/snap/snap.js"
+                    data-client-key={midtransClientKey}
+                    strategy="lazyOnload" 
+                />
             </body>
         </html>
     );
