@@ -31,6 +31,7 @@ export interface Booking {
     id: string;
     proofUrl: string;
     status: string;
+    snapToken?: string;
   }[];
 
   review?: {
