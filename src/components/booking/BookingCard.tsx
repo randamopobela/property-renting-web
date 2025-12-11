@@ -65,8 +65,15 @@ export default function BookingCard({ booking }: { booking: Booking }) {
       window.location.reload();
   };
 
-  // Logic tampilkan tombol Review (Hanya jika Lunas/Selesai)
-  const canReview = booking.status === "PAID" || booking.status === "COMPLETED";
+  // --- REVISI LOGIKA REVIEW ---
+  // 1. Cek Tanggal Sekarang vs Check-out
+  const now = new Date();
+  const checkOutTime = new Date(booking.checkOut);
+  const isPastCheckOut = now > checkOutTime;
+
+  // 2. Logic tampilkan tombol Review (Hanya jika Lunas/Selesai DAN sudah lewat tanggal checkout DAN belum review)
+  const canReview = (booking.status === "COMPLETED" || (booking.status === "PAID" && isPastCheckOut)) && !booking.review;
+  // ----------------------------
 
   return (
     <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden bg-white">
@@ -158,7 +165,9 @@ export default function BookingCard({ booking }: { booking: Booking }) {
            {!canReview && booking.status !== "PENDING" && (
                <div className="text-center text-xs text-gray-400 italic mb-2">
                    {booking.status === "AWAITING_CONFIRMATION" ? "Menunggu Konfirmasi Tenant" : 
-                    booking.status === "CANCELLED" ? "Pesanan Dibatalkan" : ""}
+                    booking.status === "CANCELLED" ? "Pesanan Dibatalkan" :
+                    (booking.status === "PAID" && !isPastCheckOut) ? "Review tersedia setelah Check-out" : 
+                    (booking.review) ? "Sudah Diulas" : ""}
                </div>
            )}
 
