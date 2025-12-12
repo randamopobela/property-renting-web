@@ -27,10 +27,6 @@ export default function PaymentPage({ params }: { params: Promise<{ bookingId: s
     const fetchBooking = async () => {
       try {
         const result = await getBookingDetailService(bookingId);
-        
-        // 👇 DEBUGGING: Sudah dikonfirmasi datanya ada
-        // console.log("DATA PAYMENTS:", result.data.payments);
-        
         setBookingData(result.data);
 
         if (!result.data.expireAt) {
@@ -104,7 +100,6 @@ export default function PaymentPage({ params }: { params: Promise<{ bookingId: s
   const handleMidtransPayment = () => {
     const paymentData = getPaymentData();
     
-    // FIX: Ambil snapToken dengan aman (handle any type sementara)
     const snapToken = (paymentData as any)?.snapToken;
 
     if (!snapToken) {
@@ -135,7 +130,6 @@ export default function PaymentPage({ params }: { params: Promise<{ bookingId: s
     });
   };
 
-  // --- LOGIKA UPLOAD MANUAL ---
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
@@ -176,7 +170,6 @@ export default function PaymentPage({ params }: { params: Promise<{ bookingId: s
     );
   }
 
-  // Cek token menggunakan helper baru
   const paymentData = getPaymentData();
   const hasSnapToken = !!(paymentData as any)?.snapToken;
 
@@ -184,7 +177,6 @@ export default function PaymentPage({ params }: { params: Promise<{ bookingId: s
     <div className="min-h-screen bg-linear-to-br from-teal-50 via-cyan-50 to-white py-12 px-4 flex justify-center items-center">
       <Card className="w-full max-w-lg border-0 shadow-2xl bg-white/90 backdrop-blur-sm overflow-hidden">
         
-        {/* HEADER (TIMER) */}
         <CardHeader className={`text-center text-white py-8 relative ${isExpired ? 'bg-gray-600' : 'bg-teal-600'}`}>
           <div className="relative z-10">
             <div className="mx-auto bg-white/20 w-14 h-14 rounded-full flex items-center justify-center mb-4 backdrop-blur-md border border-white/30">
@@ -203,8 +195,6 @@ export default function PaymentPage({ params }: { params: Promise<{ bookingId: s
         </CardHeader>
 
         <CardContent className="p-8 space-y-6">
-          
-          {/* INFO BOOKING */}
           <div className="bg-white border border-teal-100 rounded-xl p-5 shadow-sm">
             <div className="flex justify-between items-center mb-4">
                 <div>
@@ -226,7 +216,6 @@ export default function PaymentPage({ params }: { params: Promise<{ bookingId: s
 
           {!isExpired && (
             <>
-                {/* 🟢 OPSI 1: MIDTRANS (BAYAR OTOMATIS) - BARU */}
                 {hasSnapToken && (
                     <div className="border border-teal-500 bg-teal-50 rounded-xl p-5 shadow-sm">
                         <div className="flex items-center gap-3 mb-3">
@@ -244,10 +233,22 @@ export default function PaymentPage({ params }: { params: Promise<{ bookingId: s
                         >
                             Bayar Sekarang (Midtrans)
                         </Button>
+                        
+                        <p className="text-xs text-center text-gray-500 mt-3 italic">
+                            Aplikasi ini menggunakan Mode Demo (Sandbox). Silakan gunakan{" "}
+                            <a 
+                                href="https://simulator.sandbox.midtrans.com/" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-teal-600 underline hover:text-teal-800"
+                            >
+                                Midtrans Simulator
+                            </a>{" "}
+                            untuk melakukan pembayaran.
+                        </p>
                     </div>
                 )}
 
-                {/* PEMISAH */}
                 {hasSnapToken && (
                     <div className="relative flex py-2 items-center">
                         <div className="grow border-t border-gray-200"></div>
@@ -256,7 +257,6 @@ export default function PaymentPage({ params }: { params: Promise<{ bookingId: s
                     </div>
                 )}
 
-                {/* 🟠 OPSI 2: TRANSFER MANUAL */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg border border-gray-200">
                       <div className="flex items-center gap-3">
